@@ -121,15 +121,6 @@ scripts\start_server.bat
 
 访问：
 
-- 前端页面：http://127.0.0.1:8000/
-- API 文档：http://127.0.0.1:8000/docs
-- 健康检查：http://127.0.0.1:8000/api/health
-- 历史记录：http://127.0.0.1:8000/api/decisions
-- Agent Memory：http://127.0.0.1:8000/api/memory
-- 评估报告历史：http://127.0.0.1:8000/api/evaluations
-
-也可以继续使用旧版入口：
-
 ```bash
 python api_server.py
 ```
