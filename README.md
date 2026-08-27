@@ -119,7 +119,16 @@ Windows 一键启动：
 scripts\start_server.bat
 ```
 
-访问：
+服务启动后可访问以下端点（请根据实际部署地址拼接）：
+
+- 前端页面：`/`
+- API 文档：`/docs`
+- 健康检查：`/api/health`
+- 历史记录：`/api/decisions`
+- Agent Memory：`/api/memory`
+- 评估报告历史：`/api/evaluations`
+
+也可以继续使用旧版入口：
 
 ```bash
 python api_server.py
@@ -186,11 +195,13 @@ python scripts/validate_embedding_provider.py --embedding-provider local-hashing
 python mcp_server.py
 ```
 
-默认 MCP Streamable HTTP 地址：
+MCP Streamable HTTP 端点：
 
 ```text
-http://127.0.0.1:8001/mcp
+/mcp
 ```
+
+实际访问地址由 MCP Server 的部署域名和端口决定。
 
 当前 MCP 工具包括：
 
@@ -445,7 +456,7 @@ $env:MESSAGE_TALK_CHROMA_PORT = "8001"
 $env:MESSAGE_TALK_CHROMA_SSL = "false"
 ```
 
-Chroma Server 使用 `chromadb/chroma:1.5.9`，主机通过 `localhost:8001` 连接；该端口只绑定 `127.0.0.1`，不会把无认证的本地 Chroma 服务暴露到局域网。Compose 内的 FastAPI 服务通过 `chroma:8000` 连接。服务数据绑定到 `D:\BaiduNetdiskDownload\message_talk_chroma_data`，容器重建后 collection 和向量仍然保留。`ChromaVectorStore` 会在初始化时执行 heartbeat，并在 Trace 中记录 `chroma_mode`、endpoint、collection、embedding provider 和 model。
+Chroma Server 使用 `chromadb/chroma:1.5.9`。主机连接地址由 `MESSAGE_TALK_CHROMA_HOST` 和 `MESSAGE_TALK_CHROMA_PORT` 配置；Compose 内的 FastAPI 服务通过 `chroma:8000` 连接。持久化目录由 `docker-compose.yml` 的 volume 配置决定，容器重建后 collection 和向量仍然保留。`ChromaVectorStore` 会在初始化时执行 heartbeat，并在 Trace 中记录 `chroma_mode`、endpoint、collection、embedding provider 和 model。
 
 第三十五轮优化后，RAG 增加轻量 Ingestion Pipeline：
 - `rag/ingestion.py` 新增 `MarkdownIngestionPipeline`，将知识库摄取拆成 Markdown Loader、section splitter、chunk splitter、metadata extraction 和 history write。
@@ -807,22 +818,23 @@ docker compose up -d chroma
 docker compose up --build message-talk
 ```
 
-服务端口与数据路径：
+服务端点与数据目录：
 
 ```text
-FastAPI: http://localhost:8000
-FastAPI health: http://localhost:8000/api/health
-Chroma: http://localhost:8001
-Chroma heartbeat: http://localhost:8001/api/v2/heartbeat
-Chroma data: D:\BaiduNetdiskDownload\message_talk_chroma_data
+FastAPI: /
+FastAPI health: /api/health
+Chroma heartbeat: /api/v2/heartbeat
+Chroma data: 由 docker-compose.yml 的 volume 配置决定
 ```
 
-检查服务状态：
+检查服务状态时，请先设置实际部署地址：
 
 ```powershell
+$apiBaseUrl = $env:MESSAGE_TALK_API_BASE_URL
+$chromaBaseUrl = $env:MESSAGE_TALK_CHROMA_BASE_URL
 docker compose ps
-Invoke-RestMethod http://localhost:8000/api/health
-Invoke-RestMethod http://localhost:8001/api/v2/heartbeat
+Invoke-RestMethod "$apiBaseUrl/api/health"
+Invoke-RestMethod "$chromaBaseUrl/api/v2/heartbeat"
 ```
 
 ## 后续优化路线
