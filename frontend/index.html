@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>复杂对抗场景智能体策略评估</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Multi-Agent Decision Console</p>
+          <h1>复杂对抗场景智能体策略评估</h1>
+        </div>
+        <div class="mode-pill" title="外部模型调用由 Python 后端负责，浏览器端不接触密钥">
+          <span id="runtimeMode">决策控制台</span>
+        </div>
+      </header>
+
+      <section class="command-strip" aria-label="快速操作">
+        <div class="field command-field">
+          <label for="scenarioSelect">场景</label>
+          <select id="scenarioSelect"></select>
+        </div>
+
+        <div class="field command-field">
+          <label for="llmModeSelect">后端 LLM 模式</label>
+          <select id="llmModeSelect">
+            <option value="auto">auto</option>
+            <option value="on">on</option>
+            <option value="off">off</option>
+          </select>
+        </div>
+
+        <button id="backendBtn" class="primary-button" type="button">运行 Python 决策</button>
+        <button id="resetBtn" class="reset-button" type="button">重置当前场景</button>
+        <p id="backendStatus" class="backend-status">启动 api_server.py 后，点击运行即可调用 Python 后端。</p>
+      </section>
+
+      <section class="main-stage">
+        <section class="overview" aria-label="决策概览">
+          <div class="decision-hero">
+            <div>
+              <p id="sceneName" class="decision-kicker"></p>
+              <h2 id="bestStrategy"></h2>
+              <p id="bestReason" class="decision-reason"></p>
+            </div>
+            <div class="status-grid" id="statusGrid"></div>
+          </div>
+
+          <div class="summary-strip" id="summaryStrip"></div>
+        </section>
+
+        <section class="strategy-workbench" aria-label="方案工作区">
+          <section class="rank-panel hero-rank" aria-label="方案排名">
+            <div class="section-title">
+              <h2>方案排名</h2>
+              <span id="decisionMode">local-rules</span>
+            </div>
+            <div id="rankingList" class="ranking-list"></div>
+          </section>
+
+          <section class="detail-panel hero-detail" aria-label="选中方案详情">
+            <div class="section-title">
+              <h2>方案详情</h2>
+              <span id="selectedScore"></span>
+            </div>
+            <article id="detailView" class="detail-view"></article>
+          </section>
+        </section>
+      </section>
+
+      <section class="operations-grid">
+        <aside class="control-panel" aria-label="场景控制">
+          <div class="section-title">
+            <h2>场景参数</h2>
+            <span>高级编辑</span>
+          </div>
+
+          <div class="field">
+            <label for="objectiveText">任务目标</label>
+            <textarea id="objectiveText" rows="3"></textarea>
+          </div>
+
+          <div class="two-col">
+            <div class="field">
+              <label for="terrainSelect">地形</label>
+              <select id="terrainSelect">
+                <option value="urban">城市</option>
+                <option value="mountain">山地</option>
+                <option value="plain">平原</option>
+                <option value="forest">森林</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="weatherInput">天气</label>
+              <input id="weatherInput" type="text" />
+            </div>
+          </div>
+
+          <div id="sliders" class="slider-stack"></div>
+        </aside>
+
+        <section class="support-stack" aria-label="辅助信息">
+          <section class="weight-panel" aria-label="动态评价权重">
+            <div class="section-title">
+              <h2>动态权重</h2>
+              <span>场景自适应</span>
+            </div>
+            <div id="weightBars" class="weight-bars"></div>
+          </section>
+
+          <section class="knowledge-panel" aria-label="RAG 知识上下文">
+            <div class="section-title">
+              <h2>RAG 知识上下文</h2>
+              <span>场景检索</span>
+            </div>
+            <div id="knowledgeList" class="knowledge-list"></div>
+          </section>
+
+          <section class="memory-panel" aria-label="Agent Memory 历史案例">
+            <div class="section-title">
+              <h2>Agent Memory</h2>
+              <span>历史召回</span>
+            </div>
+            <div id="memoryList" class="memory-list"></div>
+          </section>
+
+          <section class="tool-panel" aria-label="Agent 工具调用">
+            <div class="section-title">
+              <h2>Tool Calls</h2>
+              <span>工具轨迹</span>
+            </div>
+            <div id="toolPlanList" class="tool-plan-list"></div>
+            <div id="toolCallList" class="tool-call-list"></div>
+          </section>
+
+          <section class="message-panel" aria-label="智能体交流">
+            <div class="section-title">
+              <h2>智能体交流</h2>
+              <span>互评摘录</span>
+            </div>
+            <div id="messageLog" class="message-log"></div>
+          </section>
+        </section>
+      </section>
+
+      <section class="review-grid" aria-label="决策回溯">
+        <section class="trace-panel" aria-label="决策流程 Trace">
+          <div class="section-title">
+            <h2>决策 Trace</h2>
+            <span>流程追踪</span>
+          </div>
+          <div id="traceTimeline" class="trace-timeline"></div>
+        </section>
+
+        <section class="history-panel" aria-label="历史决策记录">
+          <div class="section-title">
+            <h2>历史记录</h2>
+            <button id="refreshHistoryBtn" class="inline-button" type="button">刷新</button>
+          </div>
+          <div id="historyList" class="history-list"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

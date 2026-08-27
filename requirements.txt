@@ -1,0 +1,10 @@
+langchain-core
+langchain-openai
+langgraph
+mcp[cli]>=1.28,<2
+fastapi
+uvicorn[standard]
+pydantic
+pytest
+httpx
+chromadb==1.5.9

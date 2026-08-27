@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.idea/
+.claude/
+.env
+*.log
+data/*.db
+data/*.db-*
+data/chroma_vectors/
+work_*.png
+docs/实习面试项目介绍与问答.md
+dist/
+build/

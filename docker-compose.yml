@@ -1,0 +1,65 @@
+services:
+  chroma:
+    image: chromadb/chroma:1.5.9
+    ports:
+      - "127.0.0.1:8001:8000"
+    volumes:
+      - "D:/BaiduNetdiskDownload/message_talk_chroma_data:/data"
+    healthcheck:
+      test:
+        - CMD
+        - /usr/bin/bash
+        - -c
+        - >-
+          exec 3<>/dev/tcp/localhost/8000;
+          printf 'GET /api/v2/heartbeat HTTP/1.0\r\nHost: localhost\r\n\r\n' >&3;
+          read -r status <&3;
+          [[ "$$status" == *" 200 "* ]]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+  message-talk:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DASHSCOPE_API_KEY: "${DASHSCOPE_API_KEY:-}"
+      MESSAGE_TALK_API_KEY: "${MESSAGE_TALK_API_KEY:-}"
+      MESSAGE_TALK_EMBEDDING_API_KEY: "${MESSAGE_TALK_EMBEDDING_API_KEY:-}"
+      MESSAGE_TALK_BASE_URL: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+      MESSAGE_TALK_MODEL: qwen3.7-plus
+      MESSAGE_TALK_AGENT_MAX_WORKERS: "${MESSAGE_TALK_AGENT_MAX_WORKERS:-5}"
+      MESSAGE_TALK_DB_PATH: /app/data/decision_records.db
+      MESSAGE_TALK_EMBEDDING_PROVIDER: openai-compatible
+      MESSAGE_TALK_EMBEDDING_MODEL: qwen3.7-text-embedding
+      MESSAGE_TALK_EMBEDDING_BASE_URL: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+      MESSAGE_TALK_EMBEDDING_DIMENSIONS: 1024
+      MESSAGE_TALK_EMBEDDING_BATCH_SIZE: 8
+      MESSAGE_TALK_VECTOR_STORE: chroma
+      MESSAGE_TALK_VECTOR_COLLECTION: tactical_knowledge_qwen_free
+      MESSAGE_TALK_CHROMA_MODE: http
+      MESSAGE_TALK_CHROMA_HOST: chroma
+      MESSAGE_TALK_CHROMA_PORT: 8000
+      MESSAGE_TALK_CHROMA_SSL: "false"
+      MESSAGE_TALK_RAG_STRICT_EMBEDDING: "true"
+      MESSAGE_TALK_LOG_LEVEL: INFO
+    depends_on:
+      chroma:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://localhost:8000/api/health', timeout=3).read()
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - ./data:/app/data
